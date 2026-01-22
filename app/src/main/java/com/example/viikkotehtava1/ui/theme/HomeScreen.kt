@@ -1,17 +1,21 @@
 package com.example.viikkotehtava1.ui.theme
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.viikkotehtava1.domain.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.viikkotehtava1.domain.Task
+import com.example.viikkotehtava1.viewmodel.TaskViewModel
 
 @Composable
-fun HomeScreen() {
-
-    var tasks by remember { mutableStateOf(mockTasks) }
-    var visibleTasks by remember { mutableStateOf(mockTasks) }
+fun HomeScreen(
+    viewModel: TaskViewModel = viewModel()
+) {
+    var newTaskTitle by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -24,82 +28,96 @@ fun HomeScreen() {
             style = MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = {
-                visibleTasks = sortByDueDate(visibleTasks)
-            }) {
+            Button(onClick = { viewModel.sortByDueDate() }) {
                 Text("Sort date")
             }
-
-            Button(onClick = {
-                visibleTasks = filterByDone(visibleTasks, true)
-            }) {
-                Text("Filter by Done")
+            Button(onClick = { viewModel.filterByDone(true) }) {
+                Text("Done")
             }
-
-            Button(onClick = {
-                visibleTasks = filterByDone(visibleTasks, false)
-            }) {
-                Text("Filter by Not Done")
+            Button(onClick = { viewModel.filterByDone(false) }) {
+                Text("Not done")
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = {
-                visibleTasks = tasks
-            },
+            onClick = { viewModel.resetFilter() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Clear filter")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Button(onClick = {
-            val newTask = Task(
-                id = tasks.size + 1,
-                title = "New task",
-                description = "Added with button",
-                priority = 1,
-                dueDate = 2028,
-                done = false
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            TextField(
+                value = newTaskTitle,
+                onValueChange = { newTaskTitle = it },
+                modifier = Modifier.weight(1f),
+                label = { Text("New task") }
             )
-            tasks = addTask(tasks, newTask)
-            visibleTasks = tasks
-        }) {
-            Text("Add task")
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = {
+                    if (newTaskTitle.isNotBlank()) {
+                        viewModel.addTask(
+                            Task(
+                                id = viewModel.nextId(),
+                                title = newTaskTitle,
+                                description = "",
+                                priority = 1,
+                                dueDate = 2028,
+                                done = false
+                            )
+                        )
+                        newTaskTitle = ""
+                    }
+                }
+            ) {
+                Text("Add")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Column {
-            visibleTasks.forEach { task ->
+        LazyColumn {
+            items(viewModel.visibleTasks) { task ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-
-                    Text(
-                        text = "${task.title} | due: ${task.dueDate} | done: ${task.done}",
-                        modifier = Modifier.padding(4.dp)
-                    )
-
+                    Row {
+                        Checkbox(
+                            checked = task.done,
+                            onCheckedChange = {
+                                viewModel.toggleDone(task.id)
+                            }
+                        )
+                        Text(
+                            text = "${task.title} | due: ${task.dueDate}",
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                     Button(onClick = {
-                        tasks = toggleDone(tasks, task.id)
-                        visibleTasks = toggleDone(visibleTasks, task.id)
+                        viewModel.removeTask(task.id)
                     }) {
-                        Text("Toggle")
+                        Text("Delete")
                     }
                 }
+                Divider()
             }
         }
     }
