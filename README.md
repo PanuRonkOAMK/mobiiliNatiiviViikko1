@@ -42,3 +42,11 @@ ViewModel ratkaisee nämä ongelmat:
 * ViewModel erottaa liiketoimintalogiikan käyttöliittymästä
 * ViewModel on testattavampi kuin UI:ssa oleva tila
 * Useat Composable-näkymät voivat käyttää samaa ViewModelia
+
+## MVVM
+
+*MVVM kategorisoi koodin, tehden siitä paremmin ymmärrettävä ja helpommin ylläpidettävä.
+
+## StateFlow
+
+*StateFlow on tilanhallintamekanismi. Se säilyttää aina sovelluksen ajantasaista tilaa ja lähetää uuden arvon kun tila muuttuu. Tämä on hyödyllistä käyttöliittymien luonnissa
