@@ -23,3 +23,22 @@ Näytetään vain listan taskit joiden Done tila on joko True tai False
 sortByDueDate(list: List&lt;Task&gt;): List&lt;Task&gt;
 
 Sortataan listan taskin niiden määräajan mukaan
+
+## Compose-tilanhallinta
+
+Käyttöliittymä ei muokkaa itseään suoraan, vaan se kuvaillaan tilan (state) perusteella.
+Kun Compose-näkymässä käytetään State-tyyppistä muuttujaa (esim. mutableStateOf), Compose seuraa sitä automaattisesti.
+Kun tila muuttuu, Compose piirtää vain ne osat käyttöliittymästä uudelleen, jotka riippuvat kyseisestä tilasta.
+
+## Viewmodel
+
+remember-funktiota voidaan käyttää Composable-funktioissa tilan tallentamiseen, mutta sillä on rajoituksia:
+* remember-tila katoaa, kun näkymä poistuu muistista
+* remember-tila ei säily laitteen kiertämisessä (konfiguraatiomuutos)
+* UI ja liiketoimintalogiikka sekoittuvat helposti keskenään
+
+ViewModel ratkaisee nämä ongelmat:
+* ViewModel säilyy konfiguraatiomuutoksissa (esim. näytön kääntö)
+* ViewModel erottaa liiketoimintalogiikan käyttöliittymästä
+* ViewModel on testattavampi kuin UI:ssa oleva tila
+* Useat Composable-näkymät voivat käyttää samaa ViewModelia
