@@ -1,16 +1,64 @@
 package com.example.viikkotehtava1.viewmodel
 
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
-import com.example.viikkotehtava1.domain.*
+import com.example.viikkotehtava1.model.Task
+import com.example.viikkotehtava1.model.mockTasks
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class TaskViewModel : ViewModel() {
 
-    private val allTasks = mutableStateListOf<Task>()
-    var visibleTasks by mutableStateOf(listOf<Task>())
-        private set
+    private val _tasks = MutableStateFlow<List<Task>>(mockTasks)
 
-    init {
+    private val _visibleTasks = MutableStateFlow<List<Task>>(mockTasks)
+    val visibleTasks: StateFlow<List<Task>> = _visibleTasks.asStateFlow()
+
+    fun addTask(task: Task) {
+        _tasks.update { it + task }
+        resetFilter()
+    }
+
+    fun toggleDone(id: Int) {
+        _tasks.update { list ->
+            list.map {
+                if (it.id == id) it.copy(done = !it.done) else it
+            }
+        }
+        resetFilter()
+    }
+
+    fun removeTask(id: Int) {
+        _tasks.update { it.filterNot { task -> task.id == id } }
+        resetFilter()
+    }
+
+    fun updateTask(updated: Task) {
+        _tasks.update { list ->
+            list.map {
+                if (it.id == updated.id) updated else it
+            }
+        }
+        resetFilter()
+    }
+
+    fun sortByDueDate() {
+        _visibleTasks.update { it.sortedBy { task -> task.dueDate } }
+    }
+
+    fun filterByDone(done: Boolean) {
+        _visibleTasks.value = _tasks.value.filter { it.done == done }
+    }
+
+    fun resetFilter() {
+        _visibleTasks.value = _tasks.value
+    }
+
+    fun nextId(): Int =
+        (_tasks.value.maxOfOrNull { it.id } ?: 0) + 1
+
+/*    init {
         allTasks.addAll(mockTasks)
         visibleTasks = allTasks
     }
@@ -46,5 +94,5 @@ class TaskViewModel : ViewModel() {
     }
 
     fun nextId(): Int =
-        (allTasks.maxOfOrNull { it.id } ?: 0) + 1
+        (allTasks.maxOfOrNull { it.id } ?: 0) + 1*/
 }
